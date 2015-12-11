@@ -137,21 +137,21 @@ Getpg_SQL <- function(db,usr,pasw,requestSQL)
 Aggregate_data <-function(res,loop,typeformat)
 {
   # create one date variable from time and date
-  res$created_at = as.POSIXct(strptime(res$created_at,typeformat)) # generating POSIXct for date and time
-  
+  res[,1] = as.POSIXct(strptime(res[,1],typeformat)) # generating POSIXct for date and time
+
   #size of rsl
-  dim <- range(res$created_at)
+  dim <- range(res[,1])
   #data.frame for preprocessing
   
   mwWork <- seq( dim[1], dim[2],loop*60)
   
   #convert raw datatimes to minutes with the reference the first datetime
-  temp <- as.integer((res$created_at- res$created_at[1])/60)
+  temp <- as.integer((res[,1]- res[1,1])/60)
   
   #convert final datatime to minutes with the reference the first datetime
   mwWork <-as.integer((mwWork-mwWork[1])/60)
-  
-  sig.av =0
+
+    sig.av =0
   sig.r=0
   
   for( k in 1:length(mwWork))
@@ -166,9 +166,10 @@ Aggregate_data <-function(res,loop,typeformat)
       sig.r[k]=999999
     }
   }
+  print("test")
   
   #convert to data.frame
-  mwWork <-data.frame(datetime= mwWork)
+  mwWork <-data.frame(datetime= mwWork) # ?????????????????
   mwWork$sig.av = sig.av
   mwWork$sig.r = sig.r
   
