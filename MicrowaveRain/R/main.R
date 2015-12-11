@@ -7,8 +7,11 @@
 #' @examples
 #' cat_function()
 
-# install.packages("xts")
-# library(xts)
+if(!require("xts")) install.packages("xts", repos="http://cran.rstudio.com/")$
+library(xts)
+library(RPostgreSQL)
+library("date")
+library("chron")
 
 #########################################################################
 ##                                                                     ##
@@ -40,4 +43,6 @@ myIntensity_diff <- Time_diff(myIntensity_avg,"mins")
 # plot(myIntensity_avg[,2],type="n",ylim=as.numeric(c(min(myIntensity_avg[,2]),max(myIntensity_avg[,2]))))
 plot(myIntensity_diff[,1],myIntensity_diff[,2],type="n",ylim=(c(-50.4,-50.8)))
 points(myIntensity_diff[,1],myIntensity_diff[,2],type="l",pch = ".")
+
+test <- Aggregate_data(myIntensity,3,"%Y-%m-%d %H:%M")
 
