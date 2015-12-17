@@ -7,7 +7,10 @@
 #' @examples
 #' cat_function()
 
-if(!require("xts")) install.packages("xts", repos="http://cran.rstudio.com/")$
+# if(!require("xts")) install.packages("xts", repos="http://cran.rstudio.com/")$
+# 
+# if(!require("RPostgreSQL")) install.packages("RPostgreSQL", repos="http://cran.rstudio.com/")$
+# if(!require("DBI")) install.packages("DBI", repos="http://cran.rstudio.com/")$
 library(xts)
 library(RPostgreSQL)
 library("date")
@@ -44,5 +47,6 @@ myIntensity_diff <- Time_diff(myIntensity_avg,"mins")
 plot(myIntensity_diff[,1],myIntensity_diff[,2],type="n",ylim=(c(-50.4,-50.8)))
 points(myIntensity_diff[,1],myIntensity_diff[,2],type="l",pch = ".")
 
-test <- Aggregate_data(myIntensity,3,"%Y-%m-%d %H:%M")
-
+test <- Aggregate_data(myIntensity,11,"%Y-%m-%d %H:%M")
+test_completed <- Complete_data(test,2)
+test_completed

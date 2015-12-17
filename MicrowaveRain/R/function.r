@@ -9,7 +9,7 @@ getpgsql <- function(db,usr,pasw,requestSQL)
   # return a data.frame which contains datetime and rx_power level 
   
   #define theses libraries in the top of your main file before used it
-  library(RPostgreSQL)
+  #library(RPostgreSQL)
   
   # don't forget to make one request ordered 
   # ensure that the PostgreSQL DB is available and you have the good account to this server
@@ -50,21 +50,21 @@ getpgsql <- function(db,usr,pasw,requestSQL)
   
 }
 
-aggregatedata <-function(res,loop,foolder,typeformat)
+aggregatedata <-function(ress,loop,foolder,typeformat)
 {
   # function to aggregate data in the specific period and complete when you 
   # don't have the data using mean function and save the result in the specific
   # folder gives by you
   
   #define theses libraries in the top of your main file before used it
-  library(xts)
-  library("date")
-  library("chron")
+  #library(xts)
+  #library("date")
+  #library("chron")
   
   #variables
   #res is the data.frame which contains the datetime and attenuation
   #typeformat is the format of datetime without the second eg "%Y-%m-%d %H:%M" for 2014-12-11 12:21:23
-  #loop is the aggregate time in minutes only
+  #loop is the aggregate time in minutes only < 60 minutes
   #foolder is the path where you save the result 
  
   # Data editing
@@ -83,25 +83,34 @@ aggregatedata <-function(res,loop,foolder,typeformat)
   # two measurements are missing they will be handled the same way and get the 
   # same value.
   
+  
+  #datetime
+  #POSIXCT signed number of seconds since "01/01/1970 at 00:00:00 UTC without leap seconds
+  #POSIXLT one of many text|character|string format such os 17-05-14 09:98:67
+  
+  
   # create one date variable from time and date
-  res$created_at = as.POSIXct(strptime(res$created_at,typeformat)) # generating POSIXct for date and time
+  ress[,1] = as.POSIXct(strptime(ress[,1],typeformat)) # generating POSIXct for date and time
   
   #------------------------------
   # Aggregate MWL data on a minutes base
   #------------------------------
   
   #size of rsl
-  dim <- range(res$created_at)
+  dim <- range(ress[,1])
   #data.frame for preprocessing
   
   mwWork <- seq( dim[1], dim[2],loop*60)
   
   #convert raw datatimes to minutes with the reference the first datetime
-  temp <- as.integer((res$created_at- res$created_at[1])/60)
+  temp <- as.integer((ress[,1]- ress[1,1])/60)
   
   #convert final datatime to minutes with the reference the first datetime
   mwWork <-as.integer((mwWork-mwWork[1])/60)
-
+  
+  
+  
+  
   sig.av =0
   sig.r=0
   
@@ -109,61 +118,109 @@ aggregatedata <-function(res,loop,foolder,typeformat)
   {
     if((mwWork[k] %in% temp) == TRUE)
     {
-      sig.av[k]= mean(res$rx_power[which(temp==mwWork[k])])
-      sig.r[k]=diff(range(res$rx_power[which(temp==mwWork[k])]))
+      
+      sig.av[k]= mean(ress[which(temp==mwWork[k]),2])
+      sig.r[k]=diff(range(ress[which(temp==mwWork[k]),2]))
+      
     }
     else
     {
-      sig.r[k]=999999
+      sig.av[k]=0
+      sig.r[k]=0
     }
+    
+    
   }
+  
   
   #convert to data.frame
   mwWork <-data.frame(datetime= mwWork)
   mwWork$sig.av = sig.av
   mwWork$sig.r = sig.r
   
+  
+  ###############################
+  ## load libraries, source functions and data
+  ###############################
+  setwd(folder)
+  
+  
   #save to file RDATA
   save(mwWork, file="mwWork.RData")	
+  
   
   return(mwWork)
   
 }
 
 
-Complete_data <- function(file,field)
-
+completvectdata <- function(vec)
+{
+  tmp_before <-0
+  tmp_after <- 0
+  for (i in 1:length(vec))
   {
-  #complete the missing value like 999999 
-  
-    tmp_before <-0
-    tmp_after <- 0
-    for (i in 1:length(file[,field]))
+    if (vec[i] != 0)
     {
-      if (file[i,field]!=999999)
+      tmp_before <- as.numeric(vec[i])
+    }
+    else
+    {
+      incr <- i
+      while(vec[incr]==0)
       {
-        tmp_before <- as.numeric(file[i,field])
+        
+        incr <- incr + 1
       }
-      else
+      
+      tmp_after <- as.numeric(vec[incr])
+      
+      
+      for(j in i:(incr-1))
       {
-        incr <- i
-        while(file[incr,field]==999999)
-        {
-          
-          incr <- incr + 1
-        }
+        vec[j] <- (tmp_before+tmp_after)/2
         
-        tmp_after <- as.numeric(file[incr,field])
-        
-        
-        for(j in i:(incr-1))
-        {
-          file[j,field] <- (tmp_before+tmp_after)/2
-          
-        }
       }
     }
-  return(file)
+  }
+  return(vec)
+}
+
+
+completematdata <- function(vec,field)
+{
+  
+  #complete the missing value like 0 
+    
+  tmp_before <-0
+  tmp_after <- 0
+  for (i in 1:length(vec[,field]))
+  {
+    if (vec[i,field] != 0)
+    {
+      tmp_before <- as.numeric(vec[i,field])
+    }
+    else
+    {
+      incr <- i
+      while(vec[incr,field]==0)
+      {
+        
+        incr <- incr + 1
+      }
+      
+      tmp_after <- as.numeric(vec[incr,field])
+      
+      
+      for(j in i:(incr-1))
+      {
+        vec[j,field] <- (tmp_before+tmp_after)/2
+        
+      }
+    }
+  }
+  
+  return(vec)
   
 }
   

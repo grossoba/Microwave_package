@@ -151,22 +151,22 @@ Aggregate_data <-function(res,loop,typeformat)
   #convert final datatime to minutes with the reference the first datetime
   mwWork <-as.integer((mwWork-mwWork[1])/60)
 
-    sig.av =0
+  sig.av =0
   sig.r=0
   
   for( k in 1:length(mwWork))
   {
     if((mwWork[k] %in% temp) == TRUE)
     {
-      sig.av[k]= mean(res$rx_power[which(temp==mwWork[k])])
-      sig.r[k]=diff(range(res$rx_power[which(temp==mwWork[k])]))
+      sig.av[k]= mean(res[which(temp==mwWork[k]),2])
+      sig.r[k]=diff(range(res[which(temp==mwWork[k]),2]))
     }
     else
     {
-      sig.r[k]=999999
+      sig.av[k] = 999999
+      sig.r[k]=0
     }
   }
-  print("test")
   
   #convert to data.frame
   mwWork <-data.frame(datetime= mwWork) # ?????????????????
@@ -185,7 +185,6 @@ Aggregate_data <-function(res,loop,typeformat)
 Complete_data <- function(file,field)
 {
   #complete the missing value like 999999 
-  
   tmp_before <-0
   tmp_after <- 0
   for (i in 1:length(file[,field]))
@@ -197,19 +196,16 @@ Complete_data <- function(file,field)
     else
     {
       incr <- i
-      while(file[incr,field]==999999)
+      while(file[incr,field]==999999 && incr < length(file[,field]))
       {
-        
         incr <- incr + 1
       }
       
       tmp_after <- as.numeric(file[incr,field])
       
-      
       for(j in i:(incr-1))
       {
         file[j,field] <- (tmp_before+tmp_after)/2
-        
       }
     }
   }
