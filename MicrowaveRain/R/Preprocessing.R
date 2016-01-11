@@ -184,7 +184,7 @@ Aggregate_data <-function(res,loop,typeformat)
 ######################################################
 Complete_data <- function(file,field)
 {
-  #complete the missing value like 999999 
+  #complete the missing values like 999999 
   tmp_before <-0
   tmp_after <- 0
   for (i in 1:length(file[,field]))
