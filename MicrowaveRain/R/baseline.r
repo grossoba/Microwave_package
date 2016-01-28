@@ -1,7 +1,5 @@
 # A Cat Function
 #'
-#' This function allows you to open a data file
-#' it has to be a textfile with the date/time in the first column and the intensity in the second one
 #' @param
 #' @keywords
 #' @export

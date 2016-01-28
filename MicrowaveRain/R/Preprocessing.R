@@ -25,6 +25,7 @@ Import_Data <- function(){
 # This functions takes as input a table with in the first column the date and in the second one
 # the intensity. First it splits the lines between intervals given by "the time_unit" and "dt" input
 # variables. It returns a table with average intensity and last time value of the interval
+###############################################
 Average_Dates <- function(Intensity,time_unit,dt){
  intervals <- endpoints(Intensity[,1],on=time_unit,dt)
  Intensity_avg <- matrix(0,nrow = (length(intervals)-1), ncol = 2)
@@ -46,6 +47,9 @@ Average_Dates <- function(Intensity,time_unit,dt){
 ###########################
 ## CHECK IF NOT A NUMBER ##
 ###########################
+# The function detects if an entry is not a number and in this case it makes the average with the 
+# previous and next neighbour
+###############################################
 Check_NA <- function(Intensity){
  NA.index <- which(is.na(Intensity[,2]))
 
@@ -130,27 +134,29 @@ Getpg_SQL <- function(db,usr,pasw,requestSQL)
 # loop is the aggregate time in minutes only
 
 # to deal with the missing measurements, the following algorithm is used:
-# if one measurement ist missing(no value , no time), there will be inserted 
-#the average of the missings right and left neighbors.
+# if one measurement is missing (no value , no time), there will be inserted 
+# the average of the missings right and left neighbors.
 # two measurements are missing they will be handled the same way and get the 
 # same value.
+###############################################
 Aggregate_data <-function(res,loop,typeformat)
 {
   # create one date variable from time and date
   res[,1] = as.POSIXct(strptime(res[,1],typeformat)) # generating POSIXct for date and time
-
+  
   #size of rsl
-  dim <- range(res[,1])
-  #data.frame for preprocessing
-  
-  mwWork <- seq( dim[1], dim[2],loop*60)
-  
-  #convert raw datatimes to minutes with the reference the first datetime
-  temp <- as.integer((res[,1]- res[1,1])/60)
-  
-  #convert final datatime to minutes with the reference the first datetime
-  mwWork <-as.integer((mwWork-mwWork[1])/60)
+  dim <- as.numeric(range(res[,1]))
 
+    #data.frame for preprocessing
+  mwWork <- seq( dim[1], dim[2],loop*60)
+
+  #convert raw datatimes to minutes with the reference the first datetime
+  temp <- (as.integer(res[,1])- as.integer(res[1,1]))/60
+
+  #convert final datatime to minutes with the reference the first datetime
+  mwWork <-(as.integer(mwWork)-as.integer(mwWork[1]))/60
+ 
+  
   sig.av =0
   sig.r=0
   
@@ -158,8 +164,8 @@ Aggregate_data <-function(res,loop,typeformat)
   {
     if((mwWork[k] %in% temp) == TRUE)
     {
-      sig.av[k]= mean(res[which(temp==mwWork[k]),2])
-      sig.r[k]=diff(range(res[which(temp==mwWork[k]),2]))
+      sig.av[k]= mean(as.numeric(res[which(temp==mwWork[k]),2]))
+      sig.r[k]=diff(range(as.numeric(res[which(temp==mwWork[k]),2])))
     }
     else
     {
@@ -169,7 +175,7 @@ Aggregate_data <-function(res,loop,typeformat)
   }
   
   #convert to data.frame
-  mwWork <-data.frame(datetime= mwWork) # ?????????????????
+  mwWork <-data.frame(datetime= mwWork)
   mwWork$sig.av = sig.av
   mwWork$sig.r = sig.r
   
@@ -211,6 +217,20 @@ Complete_data <- function(file,field)
   }
   return(file)
 }
+
+###############
+## PLOT DATA ##
+###############
+Draw_plot <- function(data,x,y,xlabel,ylabel)
+{
+  plot(data[,x],data[,y],type="n",ylim=(as.numeric(c(min(data[,y]),max(data[,y])))),xlab=xlabel, ylab=ylabel)
+  points(data[,x],data[,y],type="l",pch = ".")
+  
+}
+
+
+
+
 
 
 
