@@ -18,7 +18,10 @@ Import_Data <- function(){
   mydata = read.table(file_path,header = TRUE,sep = ";")
   return(mydata)
 }
-
+Import_Data <- function(file_path){
+  mydata = read.table(file_path,header = TRUE,sep = ";")
+  return(mydata)
+}
 ##############################################
 ## MAKE THE AVERAGE FOR GIVEN TIME INTERVAL ##
 ##############################################
@@ -78,7 +81,7 @@ Time_diff <- function(Intensity,time_unit)
 
   for(i in 1:length(Intensity[,1]))
   {
-  Intensity_diff[i,1] <- as.numeric(difftime(myIntensity[i,1],myIntensity[1,1], units=c(time_unit)))
+  Intensity_diff[i,1] <- as.numeric(difftime(Intensity[i,1],Intensity[1,1], units=c(time_unit)))
   Intensity_diff[i,2] <- Intensity[i,2]
 
   }

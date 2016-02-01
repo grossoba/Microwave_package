@@ -22,18 +22,16 @@ library("chron")
 ##                                                                     ##
 #########################################################################
 print("Choose the main.R file")
-FILE_path <- file.choose()
+# FILE_path <- file.choose()
+FILE_path <- "/home/dwhtest/Microwave_package/MicrowaveRain/R/main.R"
 DIR_path <- dirname(FILE_path)
 setwd(DIR_path)
 source("Preprocessing.R")
 
+myMicrowave <- Import_Data("/home/dwhtest/Microwave_package/MicrowaveRain/Data/links2simulation_ev3_out.csv")
+dataAttenuation <-Import_Data("/home/dwhtest/Microwave_package/MicrowaveRain/Data/ZH7527A_ZH0027C.txt")
+dataRain <- Import_Data("/home/dwhtest/Microwave_package/MicrowaveRain/Data/ZH7527A_ZH0027C.txt")
 
-myMicrowave <- Import_Data()
-dataAttenuation <-Import_Data()
-dataRain <- Import_Data()
-
-aaaa <- dataAttenuation
-dataAttenuation <- aaaa
 
 dataAttenuation$date = strptime(dataAttenuation$date,"%Y-%m-%d %H:%M:%S")
 dataRain$date = strptime(dataRain$date,"%Y-%m-%d %H:%M:%S")
@@ -71,17 +69,35 @@ points(dataRain_diff[,1],dataRain_diff[,2],type="l",pch = ".")
 plot(dataRain_aggregate[,1],dataRain_aggregate[,2],type="n")
 points(dataRain_aggregate[,1],dataRain_aggregate[,2],type="l",pch = ".")
 
+
+max_hf <- 8
+high_freq2 <- array(0,c(length(dataRain_diff[,2])))
 data_Rain_fft <- fft(as.numeric(dataRain_diff[,2]), inverse = FALSE)
+high_freq1 <- data_Rain_fft[abs(data_Rain_fft) > max_hf ] # doesn't work with 2 tests ?!
 
-plot(fft(as.numeric(dataRain_diff[,2]), inverse = FALSE), type = 'p',pch="x")
+for(i in 1:length(dataRain_diff[,2])){
+  if(abs(data_Rain_fft[i]) > max_hf){
+    high_freq2[i] <- dataRain_diff[i,2]
+  }
+  else{
+    high_freq2[i] <- NaN
+  }
+}
 
-plot(data_Rain_fft[abs(data_Rain_fft) > 20],type = 'p', pch="x")
+par(mfrow = c(2, 2))
+plot(dataRain_diff[,1],dataRain_diff[,2],type="n")
+points(dataRain_diff[,1],dataRain_diff[,2],type="l",pch = ".")
 
-high_freq <- data_Rain_fft[abs(data_Rain_fft) > 20]
+plot(dataRain_diff[,1],high_freq2,type="n")
+points(dataRain_diff[,1],high_freq2,type="l",pch = ".")
+plot(as.ts(inv_high_freq), type = 'l', pch=".")
+plot(high_freq1,type="p",pch="x")
 
-inv_high_freq <- fft(high_freq, inverse = TRUE)/length(high_freq)
 
-plot(inv_high_freq, type = 'p', pch="x")
+inv_high_freq1 <- fft(high_freq1, inverse = TRUE)
+
+plot(as.ts(inv_high_freq1), type = 'l', pch=".")
+
 
 # test <- Aggregate_data(dataAttenuation,1,"%Y-%m-%d %H:%M")
 # test_completed <- Complete_data(test,2)
