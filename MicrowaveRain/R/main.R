@@ -57,8 +57,8 @@ dataRain <- Convert_into_rain(bsln_meanAttenuation,cste_k_a)
 ###########
 ## PLOTS ##
 ###########
-par(mfrow = c(2,1))
+par(mfrow = c(2,1),mar=c(5.1, 4.1, 4.1, 2.1))
+Draw_plot(dataRain,1,2,"", "Rainfall rate [mm/h]")
 Draw_plot(dataAttenuation_diff,1,2,"Time [min]", "Signal [dB]")
 abline(h =mean(dataAttenuation_diff[,2], untf = FALSE),lty=5,col=35)
-Draw_plot(dataRain,1,2,"Time [min]", "Rainfall rate [mm/h]")
 

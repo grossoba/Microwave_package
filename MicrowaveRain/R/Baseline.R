@@ -20,3 +20,8 @@ Bsline_mean_value <- function(attenuation){
   
   return(bsline_attenuation)
 }
+
+###################
+## MOVING WINDOW ##
+###################
+Moving_window <- function(size,data)
