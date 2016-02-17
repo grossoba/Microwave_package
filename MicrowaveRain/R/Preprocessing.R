@@ -18,10 +18,12 @@ Import_Data <- function(){
   mydata = read.table(file_path,header = TRUE,sep = ";")
   return(mydata)
 }
-Import_Data <- function(file_path){
-  mydata = read.table(file_path,header = TRUE,sep = ";")
+Import_Data <- function(file_path, ...){
+  mydata = read.table(file_path,header = TRUE,sep = ";", stringsAsFactors=FALSE, ...)
   return(mydata)
 }
+
+
 ##############################################
 ## MAKE THE AVERAGE FOR GIVEN TIME INTERVAL ##
 ##############################################
@@ -226,8 +228,8 @@ Complete_data <- function(file,field)
 ###############
 Draw_plot <- function(data,x,y,xlabel,ylabel)
 {
-  plot(data[,x],data[,y],type="n",ylim=(as.numeric(c(min(data[,y]),max(data[,y])))),xlab=xlabel, ylab=ylabel)
-  points(data[,x],data[,y],type="l",pch = ".")
+  plot(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="n",ylim=(as.numeric(c(min(data[,y]),max(data[,y])))),xlab=xlabel, ylab=ylabel)
+  points(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="l",pch = ".")
   
 }
 

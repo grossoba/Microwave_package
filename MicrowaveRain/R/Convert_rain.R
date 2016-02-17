@@ -18,9 +18,9 @@ Convert_into_rain <- function(attenuation,cste_k_a){
   rain <- array(0,c(length(attenuation[,2]),2))
   rain[,1] <- attenuation[,1]
   
-  attenuation[attenuation[,2]<0,2] = 0
+  attenuation[as.numeric(attenuation[,2])<0,2] = 0
   
-  rain[,2] <- (attenuation[,2]/cste_k_a[1])**(1/cste_k_a[2])
+  rain[,2] <- (as.numeric(attenuation[,2])/cste_k_a[1])**(1/cste_k_a[2])
   
   return(rain)
 }
