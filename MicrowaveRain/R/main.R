@@ -46,12 +46,13 @@ dataAttenuation <- Average_Dates(dataAttenuation,"mins",1)
 ## BASELINE ##
 ##############
 # bsln_meanAttenuation <- Bsline_mean_value(dataAttenuation_diff)
-# bsln_meanAttenuation <- Bsline_meanValue(dataAttenuation)
-bsln_meanAttenuation <- Bsline_meanValue_moving_window(dataAttenuation,90)
+bsln_meanAttenuation <- Bsline_meanValue(dataAttenuation)
+bslnwind_meanAttenuation <- Moving_window_dyn(dataAttenuation,90,mean)
 #####################
 ## RAIN CONVERSION ##
 #####################
 cste_k_a <- Antenna_freq(58,"V")
+dataRain_window <- Convert_into_rain(bslnwind_meanAttenuation,cste_k_a)
 dataRain <- Convert_into_rain(bsln_meanAttenuation,cste_k_a)
 
 
@@ -59,7 +60,10 @@ dataRain <- Convert_into_rain(bsln_meanAttenuation,cste_k_a)
 ## PLOTS ##
 ###########
 par(mfrow = c(2,1),mar=c(5.1, 4.1, 4.1, 2.1))
-Draw_plot(dataRain,1,2,"", "Rainfall rate [mm/h]")
+Draw_plot(dataRain,1,2,"", "Rainfall rate [mm/h]",col=35)
+par(new=TRUE)
+Draw_plot(dataRain_window,1,2,"", "",axes = FALSE,col=2)
 Draw_plot(dataAttenuation,1,2,"Time", "Signal [dB]")
 abline(h =mean(as.numeric(dataAttenuation[,2]), untf = FALSE),lty=5,col=35)
+points(strptime(bslnwind_meanAttenuation[,1],"%Y-%m-%d %H:%M:%S"),bslnwind_meanAttenuation[,3],type="l",pch = ".", col=2)
 

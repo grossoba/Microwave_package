@@ -226,10 +226,10 @@ Complete_data <- function(file,field)
 ###############
 ## PLOT DATA ##
 ###############
-Draw_plot <- function(data,x,y,xlabel,ylabel)
+Draw_plot <- function(data,x,y,xlabel,ylabel,...)
 {
-  plot(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="n",ylim=(as.numeric(c(min(data[,y]),max(data[,y])))),xlab=xlabel, ylab=ylabel)
-  points(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="l",pch = ".")
+  plot(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="l",pch=".",ylim=(as.numeric(c(min(data[,y]),max(data[,y])))),xlab=xlabel, ylab=ylabel,...)
+  # points(strptime(data[,x],"%Y-%m-%d %H:%M:%S"),data[,y],type="l",pch = ".", ...)
   
 }
 
