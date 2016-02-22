@@ -47,7 +47,8 @@ dataAttenuation <- Average_Dates(dataAttenuation,"mins",1)
 ##############
 # bsln_meanAttenuation <- Bsline_mean_value(dataAttenuation_diff)
 bsln_meanAttenuation <- Bsline_meanValue(dataAttenuation)
-bslnwind_meanAttenuation <- Moving_window_dyn(dataAttenuation,90,mean)
+fcts <- list(function(x) mean(x), function(x) sd(x)) 
+bslnwind_meanAttenuation <- Moving_window_dyn(dataAttenuation,180,fcts,"symm")
 #####################
 ## RAIN CONVERSION ##
 #####################
