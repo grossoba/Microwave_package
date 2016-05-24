@@ -36,6 +36,7 @@ dataAttenuation <-Import_Data("/home/dwhtest/Microwave_package/MicrowaveRain/Dat
 ###################
 dataAttenuation$date = strptime(dataAttenuation$date,"%Y-%m-%d %H:%M:%S")
 dataAttenuation <- Check_NA(dataAttenuation)
+dataAttenuation <- Check_NA(TEST)
 dataAttenuation <- Average_Dates(dataAttenuation,"mins",1)
 # dataAttenuation_aggregate <- Aggregate_data(dataAttenuation,10,"%Y-%m-%d %H:%M")
 # dataAttenuation_aggregate <- Complete_data(dataAttenuation_aggregate,2)
