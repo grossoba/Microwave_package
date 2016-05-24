@@ -7,9 +7,9 @@
 #' Import_Data()
 #'
 
-#############################
-## IMPORT DATA FROM A FILE ##
-#############################
+####################
+## BASIC BASELINE ##
+####################
 # It computes the attenuation between the signal received and a
 # baseline given by the mean of the sample
 Bsline_meanValue <- function(attenuation) {
@@ -81,27 +81,25 @@ Moving_window_dyn <- function(attenuation,width,fcts,dir_window)
 {
   size_data <-
     as.numeric(difftime(
-      strptime(attenuation[length(attenuation[,2]),1],"%Y-%m-%d %H:%M:%S"),strptime(attenuation[1,1],"%Y-%m-%d %H:%M:%S"),units =
-        "mins"
-    )) # size of the data in min
-  nbr_intervals <-
-    floor(size_data / width) # number of intervals not considering the rest of division
-  mvingwdw_attenuation <-
-    array(0,c(length(attenuation[,2]),length(fcts) + 2))
+      strptime(attenuation[length(attenuation[,2]),1],"%Y-%m-%d %H:%M:%S"),strptime(attenuation[1,1],"%Y-%m-%d %H:%M:%S"),units ="mins")) # size of the data in min
+  nbr_intervals <- floor(size_data / width) # number of intervals not considering the rest of division
+  mvingwdw_attenuation <- array(0,c(length(attenuation[,2]),length(fcts) + 2))
   
   mvingwdw_attenuation[,1] <- attenuation[,1]
   mvingwdw_attenuation[,2] <- attenuation[,2]
   
-  if (dir_window == "past")
-  {
+  if (dir_window == "asymm")
+  { 
     for (i in 1:(length(attenuation[,2])))
     {
       for (j in 1:length(fcts))
       {
         mvingwdw_attenuation[i,j + 2] <-
-          fcts[[j]](as.numeric(attenuation[(
+          fcts[[j]](as.numeric(attenuation[which(
             strptime(attenuation[i,1],"%Y-%m-%d %H:%M:%S") - 60 *width <= strptime(attenuation[,1],"%Y-%m-%d %H:%M:%S") &
               strptime(attenuation[,1],"%Y-%m-%d %H:%M:%S") <= strptime(attenuation[i,1],"%Y-%m-%d %H:%M:%S")),2]))
+        if(i==1 & is.na(as.numeric(mvingwdw_attenuation[i,j+2]))){mvingwdw_attenuation[i,j + 2] <- 0}
+        
       }
     }
   }
@@ -118,14 +116,32 @@ Moving_window_dyn <- function(attenuation,width,fcts,dir_window)
       }
     }
   }
-  
-  
+
   return(mvingwdw_attenuation)
 }
 
 
 
-Schleiss_S1 <- function()
-{
-  
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

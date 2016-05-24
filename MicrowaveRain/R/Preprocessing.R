@@ -234,35 +234,7 @@ Draw_plot <- function(data,x,y,xlabel,ylabel,...)
 }
 
 
-###################################################
-## CONSTANTS AND FREQUENCIES FOR ANTENNAS        ##
-###################################################
-# Function that takes the frequency and the polarization
-# and returns the two corresponding constants k and alpha
-# from the ITU-R table P.838-3
-###############################################
-Antenna_freq <-function(freq, polari)
-{
-  cste_antenna <- array(0,2)
-  mydata <- read.table("/home/dwhtest/Microwave_package/MicrowaveRain/Data/ITU-R",header = TRUE,sep = ";",stringsAsFactors=FALSE)
-  
-  index <- which.min(abs(mydata[,1]-freq))
-  
-  if(polari =="H")
-  {
-   cste_antenna <- c(mydata[index,2], mydata[index,3])
-  }
-  else if(polari =="V")
-  {
-    cste_antenna <- c(mydata[index,4], mydata[index,5])
-  }
-  else
-  {
-    print("Error : wrong polarization")
-  }
 
-  return(cste_antenna)
-}
 
 
 
