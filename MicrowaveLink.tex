@@ -1,0 +1,154 @@
+\documentclass[a4wide,12pt]{article}
+\usepackage{a4wide}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel} 
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+
+\usepackage{tabularx,colortbl,booktabs}
+
+
+\usepackage{pgf,tikz,pgfkeys,pgfplots}
+\usetikzlibrary{shapes}
+\usetikzlibrary{calc}
+\usetikzlibrary{matrix}
+\usetikzlibrary{positioning,shapes,shadows,arrows}
+
+\setlength\parindent{0pt}
+
+\title{R package for Microwave links}
+
+\author{Bastien Grosso}
+
+
+
+
+
+\definecolor{dkgreen}{rgb}{.13,.57,.33}
+\definecolor{dkred}{rgb}{.57,.13,.33}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent Previous works have shown that it is possible to use the attenuation of a signal between antennas, in ordre to estimate the amount of rain. Several algorithms have been developed in order to separate the dry and wet period and also transform attenuation into rainfall rate.
+\\ \\
+The aim of this work is to create a package written in R, that gathers different preprocessing functions in order to prepare the rough files with the attenuation, other functions to predict a baseline in order to calculate the attenuation difference and finally functions to convert the attenuation into rain.
+
+\end{abstract}
+
+\section{Preliminary}
+We assume that the file that contains the data of the signal intensity has two columns, with in the first column the date and in the second one the intensity of the signal. the two types of data are separated by a semicolon and the first line of the file contains the type of the column, which are "date" and "rx\_power". The format of the date is 
+\begin{center}"YYYY-MM-DD hh:mm:ss".\end{center}
+
+The sections of this document represent the file of the package and the subsections the functions. The names are indicated between parenthesis and quotes marks.
+
+\section{Preprocessing the data ("Preprocessing")}
+The data containing the signal intensity can be with a different time interval, with an irregular rate of measurement or with incorrect values. For these reasons it is important to treat the data first in order to eliminate undefined values or to have a regular data set for example, in case it is needed. Let's present here different functions for that purpose. 
+
+\subsection{Averaged intervals ("Average\_Datas")}
+\label{average_date}
+If one wants a regular data set, it is possible to split the data into intervals and average the values for each interval in order to get one measurement every given time step. This algorithm just aggregate existing data but doesn't make it regular if measurements are missing. 
+
+The function takes three arguments : 
+
+\begin{enumerate}
+\item "Intensity", a table containing in the first column the time and in the second one the intensity
+\item "time", the time unit (seconds,minutes, hours, etc)
+\item "dt", the size of each time interval
+\end{enumerate} 
+
+The functions computes then inside each interval the average value and returns a table with the averaged values.
+
+\subsection{Check if it is NaN ("Check\_NA")}
+It can be that there are non valid values in the data set. In order to treat that problem, one can filter the "not a number" values. If there is more than 2 consecutive invalid values, the function doesn't change these values. 
+
+The function takes only one argument that is the Intensity table. It checks for the indices that are invalid if the previous and next or second next values are valid and takes the average.
+
+\subsection{Time differencies ("Time\_diff")}
+If one wants to have the time expressed as the difference between a starting point and the considered time, this function does the trick. It takes as arguments the data set and the time unit (see section \ref{average_date}). 
+
+\subsection{Import data from a database ("Getpg\_SQL")}
+done by William...
+
+\subsection{Gather the data ("Aggregate\_data)}
+There can be data that have gaps. The previous function to aggregate the data didn't handle missing values. We want now to define a function that takes any data set, and transforms it into a regular data set with a given period and no gap. This will be done in two steps, first aggregating the values for the existing intervals and putting temporary values (-999999) for missing intervals. The temporary values will be replaced with the next function.
+\\ \\
+The function takes three arguments : 
+\begin{enumerate}
+\item "res", the array that contains the time and intensity
+\item "loop", the time interval in minutes
+\item "typeformat", the time format without the seconds (e.g. "\%Y-\%m-\%d \%H:\%M")
+\end{enumerate}
+
+The idea is to create an array with the number of values given by the size of the total interval (difference between first time and last time in the initial data) divided by the the size of an interval. This will give the number of intervals to fulfil. We can then check in the original data that each interval exists, if it is the case one can aggregate the data inside the interval in case there are, and if there is no corresponding interval in the original data one can replace it by a temporary value. 
+\\ \\
+The result of this computation will be to have a data set with the number of values corresponding to the number of intervals given by the splitting that was chosen. The next step is to replace the "-999999" values by average values.
+
+\subsection{Complete empty values ("Complete\_data")}
+This function is a complement to the previous one. It will basically detect the invalid values and look for the closest correct value before and after and average them in order to give a defined value anywhere. It works for any amount of consecutive invalid values. 
+\\ \\
+It takes as arguments the vector to work on and the column in this vector where one wants to replace the values.
+
+\section{Baseline estimation ("Baseline")}
+The aim of this section is to present a set of algorithm to compute a threshold that will be the reference to classify if a period is dry or wet and compute the rainfall rate consequently. 
+
+\subsection{Mean value ("Bsline\_meanValue")}
+The first baseline estimation is the simplest one, that consists in taking the mean value of the whole sample and use it as baseline. 
+\\ \\
+The function takes the intensity vector and returns a vector containing in the first column the time and in the second one the subtraction of the intensity to the baseline computed. 
+
+\subsection{Separation in time intervals ("Moving\_window\_static")}
+A first step to the moving window algorithm is to split the total time into intervals according to the time. One can then choose the size (in time) of an interval and choose a quantity to be computed on that interval (mean, standard deviation, etc). 
+
+The function takes as parameters :
+
+\begin{enumerate}
+\item "attenuation", as usual
+\item "width", that is the size in time of the interval
+\item "f", that is the mathematical quantity that has to be computed on an interval 
+\end{enumerate}
+
+The function then divides the size of the data set by the width of an interval to get the total number of intervals. Then, using the different interval boundary values, it filters the data to get the ones inside each interval and apply the mathematical function on each interval. 
+\\ \\
+The function returns an array with in the two first columns the input intensity and in the third column the quantity computed according to "f" on each interval.
+
+
+\subsection{Time based moving windows ("Moving\_window\_dyn")}
+We can now add few improvements to the previous function. We want to allow the window to move in time, which means that we fix the width of an interval but the position of this interval will change along the data set in order to compute for each point a value given by the mathematical function chosen. It is possible to make the window symmetric (half of the width before the point and half after) or asymmetric (all the width before). It is also possible to generalise the amount of functions to be computed. 
+
+The function takes now as arguments : 
+
+\begin{enumerate}
+\item "attenuation"
+\item "width"
+\item "fcts", a list containing the different mathematical functions that we want to compute (e.g. "list(function(x) mean(x), function(x) sd(x))")
+\item "dir\_window", a string to choose between symmetric ("symm") and asymmetric ("asymm")
+\end{enumerate}
+
+For every point of the data set, the algorithm filters the points that are inside the interval (symm or asymm), computes the different quantities that are present in the list of functions and moves to the next point.
+\\ \\
+It returns a vector with the two original columns and an added number of columns equal to the size of the list of functions to be computed.
+
+\section{Conversion into rainfall rate and constants ("Convert\_rain")}
+The baseline is a tool to separate the rainy and dry events, but once this is done, one needs to convert the attenuation into rainfall rate. The formula to go from the attenuation to the rainfall rate is simply $R = \sqrt[\alpha]{\frac{\gamma}{k}}$, where $\gamma$ is the attenuation and $\alpha, k$ constants that have to be determined. 
+
+\subsection{Constants and frequencies ("Antenna\_freq")}
+The way to determine the constants presented above is to use an international reference table named "ITU-R". One has to choose the polarisation and frequency of the antenna in order to find the constants. 
+
+The function implemented for that takes as arguments the frequency ("freq") and polarisation ("polari"). It looks into the table at the corresponding polarisation what is the closest frequency and returns the corresponding constants.
+
+\subsection{Make it rain ! ("Convert\_into\_rain")}
+Once we have the constants and the attenuation, we can simply compute the rainfall rate estimation. Thus, the function only needs the attenuation and the constants in order to return the rainfall rate. 
+
+\section{Algorithms to predict rainfall rate ("Algorithms")}
+Once we presented different technics to organise the data and estimate the baseline, we can use different algorithms that combine the previous functions. 
+
+\subsection{Schleiss Decision rule 1 ("Schleiss\_S1")}
+
+
+
+\end{document}
